@@ -15,9 +15,9 @@ namespace AirlineService.Models
         public int Number { get; set; }
         public int DepartureAirportId { get; set; }
         public int ArrivalAirportId { get; set; }
-        public TimeOnly DepartureTime { get; set; }
-        public TimeOnly ArrivalTime { get; set; }
-        public TimeOnly FlightDuration { get; set; }
+        public TimeSpan DepartureTime { get; set; }
+        public TimeSpan ArrivalTime { get; set; }
+        public TimeSpan FlightDuration { get; set; }
         public int Terminal { get; set; }
 
         public virtual Airline Airline { get; set; } = null!;

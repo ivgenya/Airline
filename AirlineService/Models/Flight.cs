@@ -13,7 +13,7 @@ namespace AirlineService.Models
 
         public int Id { get; set; }
         public int ScheduleId { get; set; }
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
         public int PlaneId { get; set; }
         public string Type { get; set; } = null!;
         public string Status { get; set; } = null!;

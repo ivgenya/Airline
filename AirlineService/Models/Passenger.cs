@@ -14,7 +14,7 @@ namespace AirlineService.Models
         public string Surname { get; set; } = null!;
         public string Name { get; set; } = null!;
         public string DocumentNumber { get; set; } = null!;
-        public DateOnly DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public string? Gender { get; set; }
         public string Email { get; set; } = null!;
 
