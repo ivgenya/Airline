@@ -1,6 +1,10 @@
-﻿using AirlineService.DTO;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using AirlineService.DTO;
 using AirlineService.Models;
 using AirlineService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AirlineService.Controllers;
@@ -17,6 +21,8 @@ public class FlightController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> GetFlightById(int id)
     {
         var flight = await _service.GetFlightByIdAsync(id);
@@ -27,6 +33,8 @@ public class FlightController : ControllerBase
     }
     
     [HttpGet("all")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> GetAllFlights()
     {
         var flights = await _service.GetAllFlightsAsync();
@@ -41,6 +49,8 @@ public class FlightController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> AddFlight([FromBody] FlightModel flightModel)
     {
         var flight = new Flight
@@ -57,13 +67,14 @@ public class FlightController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> UpdateFlight(int id, [FromBody] FlightModel flightModel)
     {
         var existingFlight = await _service.GetFlightByIdAsync(id);
         if (existingFlight == null)
             return NotFound();
-    
-        // Обновляем свойства существующего объекта Flight значениями из FlightModel
+        
         existingFlight.ScheduleId = flightModel.ScheduleId;
         existingFlight.Date = flightModel.Date;
         existingFlight.PlaneId = flightModel.PlaneId;
@@ -77,6 +88,8 @@ public class FlightController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> DeleteFlight(int id)
     {
         var existingFlight = await _service.GetFlightByIdAsync(id);
@@ -86,4 +99,12 @@ public class FlightController : ControllerBase
         await _service.DeleteFlightAsync(id);
         return NoContent();
     }
+    
+    [HttpGet("board")]
+    public async Task<IActionResult> GetFlightsBoard(string departureCity, string arrivalCity, DateTime date)
+    {
+        var flights = await _service.GetFlightsBoardAsync(departureCity, arrivalCity, date);
+        return Ok(flights);
+    }
+
 }

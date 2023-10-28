@@ -1,6 +1,8 @@
 ﻿using AirlineService.DTO;
 using AirlineService.Models;
 using AirlineService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AirlineService.Controllers;
@@ -18,6 +20,8 @@ public class ScheduleController: ControllerBase
     }
 
     [HttpGet]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<ActionResult<IEnumerable<Schedule>>> GetAllSchedules()
     {
         var schedules = await _service.GetAllScheduleAsync();
@@ -25,6 +29,8 @@ public class ScheduleController: ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<ActionResult<Schedule>> GetScheduleById(int id)
     {
         var schedule = await _service.GetScheduleByIdAsync(id);
@@ -36,6 +42,8 @@ public class ScheduleController: ControllerBase
     }
 
     [HttpPost]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<ActionResult<Schedule>> CreateSchedule([FromBody] ScheduleModel scheduleModel)
     {
         Schedule schedule = new Schedule
@@ -54,6 +62,8 @@ public class ScheduleController: ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleModel scheduleModel)
     {
         var existingSchedule = await _service.GetScheduleByIdAsync(id);
@@ -71,6 +81,8 @@ public class ScheduleController: ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> DeleteSchedule(int id)
     {
         var existingSchedule = await _service.GetScheduleByIdAsync(id);
