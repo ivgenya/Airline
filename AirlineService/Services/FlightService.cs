@@ -1,4 +1,5 @@
-﻿using AirlineService.Models;
+﻿using AirlineService.DTO;
+using AirlineService.Models;
 using AirlineService.Repositories;
 
 namespace AirlineService.Services;
@@ -39,5 +40,10 @@ public class FlightService: IFlightService
     public async Task DeleteFlightAsync(int flightId)
     {
         await _repository.DeleteFlightAsync(flightId);
+    }
+    
+    public async Task<IEnumerable<FlightBoardModel>> GetFlightsBoardAsync(string departureCity, string arrivalCity, DateTime date)
+    {
+        return await _repository.GetFlightsBoardAsync(departureCity, arrivalCity, date);
     }
 }

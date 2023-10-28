@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using AirlineService.Data;
+using AirlineService.DTO;
 using AirlineService.Models;
+using AirlineService.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AirlineService.Repositories;
@@ -50,5 +52,31 @@ public class FlightRepository: IFlightRepository
             _context.Flights.Remove(flight);
             await _context.SaveChangesAsync();
         }
+    }
+    
+    public async Task<IEnumerable<FlightBoardModel>> GetFlightsBoardAsync(string departureCity, string arrivalCity, DateTime date)
+    {
+        return await _context.Flights
+            .Where(flight => flight.Schedule.DepartureAirport.City == departureCity)
+            .Where(flight => flight.Schedule.ArrivalAirport.City == arrivalCity)
+            .Where(flight => flight.Date.Date == date.Date)
+            .Select(flight => new FlightBoardModel
+            {
+                Id = flight.Id,
+                Date =  flight.Date,
+                Type = flight.Type,
+                Status = flight.Status, 
+                Gate = flight.Gate,
+                AirlineShortName = flight.Schedule.Airline.ShortName,
+                ScheduleNumber = flight.Schedule.Number,
+                DepartureTime = flight.Schedule.DepartureTime,
+                ArrivalTime = flight.Schedule.ArrivalTime,
+                FlightDuration = flight.Schedule.FlightDuration,
+                ArrivalAirportCity = flight.Schedule.ArrivalAirport.City,
+                ArrivalAirportShortName = flight.Schedule.ArrivalAirport.ShortName,
+                DepartureAirportCity = flight.Schedule.DepartureAirport.City,
+                DepartureAirportShortName = flight.Schedule.DepartureAirport.ShortName
+            })
+            .ToListAsync();
     }
 }

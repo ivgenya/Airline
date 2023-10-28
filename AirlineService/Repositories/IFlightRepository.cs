@@ -1,4 +1,5 @@
-﻿using AirlineService.Models;
+﻿using AirlineService.DTO;
+using AirlineService.Models;
 
 namespace AirlineService.Repositories;
 
@@ -10,4 +11,5 @@ public interface IFlightRepository
     Task AddFlightAsync(Flight flight);
     Task UpdateFlightAsync(Flight flight);
     Task DeleteFlightAsync(int flightId);
+    Task<IEnumerable<FlightBoardModel>> GetFlightsBoardAsync(string departureCity, string arrivalCity, DateTime date);
 }
