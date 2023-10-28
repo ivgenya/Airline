@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace AirlineService.Models
 {
@@ -19,9 +20,13 @@ namespace AirlineService.Models
         public string Status { get; set; } = null!;
         public int Gate { get; set; }
 
+        [JsonIgnore]
         public virtual Plane Plane { get; set; } = null!;
+        [JsonIgnore]
         public virtual Schedule Schedule { get; set; } = null!;
+        [JsonIgnore]
         public virtual ICollection<Seat> Seats { get; set; }
+        [JsonIgnore]
         public virtual ICollection<Ticket> Tickets { get; set; }
     }
 }

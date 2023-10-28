@@ -11,6 +11,7 @@ public class ApplicationDbContext: IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
+    public DbSet<UserTicket> userTicket { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

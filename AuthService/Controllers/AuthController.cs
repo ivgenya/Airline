@@ -3,14 +3,16 @@ using System.Security.Claims;
 using System.Text;
 using AuthService.DTO;
 using AuthService.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthService.Controllers;
 
-[Route("api/[controller]/{model}")]
+[Route("api/[controller]")]
 [ApiController]
+
 public class AuthController:Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -31,22 +33,18 @@ public class AuthController:Controller
     public async Task<IActionResult> Login(LoginModel model)
     {
         var user = await _userManager.FindByNameAsync(model.UserName);
-
         if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
         {
             var userRoles = await _userManager.GetRolesAsync(user);
-
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
             };
-
             foreach (var role in userRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
-
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -61,7 +59,6 @@ public class AuthController:Controller
             HttpContext.Response.Headers.Add("Authorization", "Bearer " + tokenString);
             return Ok(new { Token = tokenString });
         }
-
         return Unauthorized("Invalid username or password");
     }
 
@@ -76,21 +73,17 @@ public class AuthController:Controller
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
-
         if (result.Succeeded)
         {
             var roleResult = await _userManager.AddToRoleAsync(user, "client");
-
             if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
                 _configuration["JwtSettings:Issuer"],
                 _configuration["JwtSettings:Audience"],
@@ -98,7 +91,6 @@ public class AuthController:Controller
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds
             );
-
             return Ok(new
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),

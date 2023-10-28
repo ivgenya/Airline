@@ -46,6 +46,7 @@ builder.Services.AddAuthentication(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -63,15 +64,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//app.Use(async (context, next) =>
-//{
-  //  var token = context.Request.Cookies[".AspNetCore.Application.Id"];
-   // if (!string.IsNullOrEmpty(token))
-  //      context.Request.Headers.Add("Authorization", "Bearer " + token);
- 
-  //  await next();
-//});
-app.UseAuthentication();
 app.MapControllers();
 
 app.Run();
