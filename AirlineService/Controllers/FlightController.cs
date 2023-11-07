@@ -41,13 +41,6 @@ public class FlightController : ControllerBase
         return Ok(flights);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetFlights([FromQuery] DateTime date, [FromQuery] string departureLocation, [FromQuery] string arrivalLocation)
-    {
-        var flights = await _service.GetFlightsByDateAndLocationsAsync(date, departureLocation, arrivalLocation);
-        return Ok(flights);
-    }
-
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "dispatcher")]
@@ -83,8 +76,8 @@ public class FlightController : ControllerBase
         existingFlight.Gate = flightModel.Gate;
 
         await _service.UpdateFlightAsync(existingFlight);
-    
-        return NoContent();
+
+        return Ok(existingFlight);
     }
 
     [HttpDelete("{id}")]
@@ -97,7 +90,7 @@ public class FlightController : ControllerBase
             return NotFound();
 
         await _service.DeleteFlightAsync(id);
-        return NoContent();
+        return Ok("Deleted successfully");
     }
     
     [HttpGet("board")]
