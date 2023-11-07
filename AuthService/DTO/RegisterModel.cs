@@ -19,7 +19,5 @@ public class RegisterModel
     [Compare("Password", ErrorMessage = "Passwords do not match.")]
     [DataType(DataType.Password)]
     public string ConfirmPassword { get; set; }
-    
-    public string[] Roles { get; set; }
 }
     
