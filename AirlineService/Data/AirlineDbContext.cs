@@ -93,7 +93,7 @@ namespace AirlineService.Data
                     .HasColumnName("booking_date");
 
                 entity.Property(e => e.Status)
-                    .HasColumnType("enum('confirmed','paid','cancelled','expired','completed','annuled')")
+                    .HasColumnType("enum('confirmed','paid','cancelled','expired','annuled')")
                     .HasColumnName("status");
             });
 
@@ -317,7 +317,7 @@ namespace AirlineService.Data
                 entity.Property(e => e.SeatId).HasColumnName("seat_id");
 
                 entity.Property(e => e.Status)
-                    .HasColumnType("enum('paid','unpaid','used','expired','annuled')")
+                    .HasColumnType("enum('paid','unpaid','used','expired','cancelled','annuled')")
                     .HasColumnName("status");
 
                 entity.HasOne(d => d.Booking)

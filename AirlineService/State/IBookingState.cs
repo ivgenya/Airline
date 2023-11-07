@@ -8,6 +8,5 @@ public interface IBookingState
     void Pay(Booking booking);
     void Cancel(Booking booking);
     void Expire(Booking booking);
-    void Complete(Booking booking);
     void Annul(Booking booking);
 }

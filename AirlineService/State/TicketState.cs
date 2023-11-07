@@ -18,11 +18,15 @@ public class TicketUnpaidState : ITicketState
     {
         ticket.State = new TicketPaidState(ticket);
     }
-
-    //нельзя зарегистрироватья
+    
     public void Expire(Ticket ticket)
     {
         ticket.State = new TicketExpiredState(ticket);
+    }
+
+    public void Cancel(Ticket ticket)
+    {
+        ticket.State = new TicketCancelledState(ticket);
     }
 
     public void Use(Ticket ticket)
@@ -58,6 +62,11 @@ public class TicketPaidState : ITicketState
         ticket.State = new TicketExpiredState(ticket);
     }
 
+    public void Cancel(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Paid to Cancelled.");
+    }
+
     public void Use(Ticket ticket)
     {
         ticket.State = new TicketUsedState(ticket);
@@ -89,6 +98,12 @@ public class TicketExpiredState : ITicketState
     
     public void Expire(Ticket ticket)
     {
+        
+    }
+
+    public void Cancel(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Expired to Cancelled.");
     }
 
     public void Use(Ticket ticket)
@@ -125,6 +140,11 @@ public class TicketUsedState : ITicketState
         throw new InvalidOperationException("Cannot transition from Used to Expired.");
     }
 
+    public void Cancel(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Used to Cancelled.");
+    }
+
     public void Use(Ticket ticket)
     {
     }
@@ -157,6 +177,11 @@ public class TicketAnnuledState : ITicketState
         throw new InvalidOperationException("Cannot transition from Annuled to Expired.");
     }
 
+    public void Cancel(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Annuled to Cancelled.");
+    }
+
     public void Use(Ticket ticket)
     {
         throw new InvalidOperationException("Cannot transition from Annuled to Used.");
@@ -164,5 +189,43 @@ public class TicketAnnuledState : ITicketState
 
     public void Annul(Ticket ticket)
     {
+    }
+}
+
+public class TicketCancelledState : ITicketState
+{
+    public static string StatusString => "cancelled";
+    
+    public TicketCancelledState(Ticket ticket) {
+        ticket.Status = StatusString;
+    }
+
+    public void Unpay(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Cancelled to Unpaid.");
+    }
+
+    public void Pay(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Cancelled to Paid.");
+    }
+    
+    public void Expire(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Cancelled to Expired.");
+    }
+
+    public void Cancel(Ticket ticket)
+    {
+    }
+
+    public void Use(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Cancelled to Used.");
+    }
+
+    public void Annul(Ticket ticket)
+    {
+        throw new InvalidOperationException("Cannot transition from Cancelled to Annul.");
     }
 }
