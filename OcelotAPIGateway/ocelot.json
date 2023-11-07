@@ -106,18 +106,6 @@
         }
       ],
       "UpstreamPathTemplate": "/api/flights",
-      "UpstreamHttpMethod": ["GET"]
-    },
-    {
-      "DownstreamPathTemplate": "/api/flights",
-      "DownstreamScheme": "https",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "localhost",
-          "Port": 7175
-        }
-      ],
-      "UpstreamPathTemplate": "/api/flights",
       "UpstreamHttpMethod": ["POST"]
     },
     {
@@ -229,6 +217,18 @@
       "UpstreamHttpMethod": ["POST"]
     },
     {
+      "DownstreamPathTemplate": "/api/ticket/booking/{id}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7175
+        }
+      ],
+      "UpstreamPathTemplate": "/api/ticket/booking/{id}",
+      "UpstreamHttpMethod": ["GET"]
+    },
+    {
       "DownstreamPathTemplate": "/api/ticket/book/{ticketId}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
@@ -275,6 +275,30 @@
       ],
       "UpstreamPathTemplate": "/api/ticket/cancel/{bookingId}",
       "UpstreamHttpMethod": ["POST"]
+    },
+    {
+      "DownstreamPathTemplate": "/api/ticket/seats/{flightId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7175
+        }
+      ],
+      "UpstreamPathTemplate": "/api/ticket/seats/{flightId}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/ticket/GetTicketDetails/{ticketId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7175
+        }
+      ],
+      "UpstreamPathTemplate": "/api/ticket/GetTicketDetails/{ticketId}",
+      "UpstreamHttpMethod": [ "GET" ]
     }
   ],
   "AuthenticationOptions": {
