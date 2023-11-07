@@ -22,4 +22,5 @@ public interface ITicketService
     Task<BoardingPassModel?> GetBoardingPassAsync(int ticketId);
     Task<Seat> GetSeatByIdAsync(int ticketId);
     Task<int> UpdateSeatAsync(Seat seat);
+    Task<IEnumerable<Seat>> GetSeatByFlightIdAsync(int flightId);
 }

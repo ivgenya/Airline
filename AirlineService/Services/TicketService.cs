@@ -115,7 +115,8 @@ public class TicketService : ITicketService
     private void StartBookingTimer(int bookingId)
     {
         int timerInterval = 60 * 1000;
-        Timer bookingTimer = new Timer(async state => await CancelBookingCallback((int)state), bookingId, (long)timerInterval, Timeout.Infinite);
+        Timer bookingTimer = new Timer(async state => await CancelBookingCallback((int)state), bookingId, 
+            (long)timerInterval, Timeout.Infinite);
     }
 
     public byte[] GenerateBoardingPass(BoardingPassModel model)
@@ -141,10 +142,8 @@ public class TicketService : ITicketService
                 pdfStamper.Close();
                 pdfReader.Close();
             }
-
             return memoryStream.ToArray();
         }
-        
     }
     
     private async Task CancelBookingCallback(int bookingId)
@@ -159,13 +158,12 @@ public class TicketService : ITicketService
                 {
                     foreach (var ticket in tickets)
                     {
-                        context.Tickets.Remove(ticket);
                         var seat = await _ticketRepository.GetSeatByIdAsync(ticket.SeatId);
                         seat.Status = "available";
                         await _ticketRepository.UpdateSeatAsync(seat);
+                        context.Tickets.Remove(ticket);
                     }
                 }
-
                 booking.State.Expire(booking);
                 await context.SaveChangesAsync();
             }
@@ -187,8 +185,6 @@ public class TicketService : ITicketService
         return true;
     }
     
-    
-
     public async Task<BoardingPassModel?> GetBoardingPassAsync(int ticketId)
     {
         return await _ticketRepository.GetBoardingPassAsync(ticketId);
@@ -197,5 +193,12 @@ public class TicketService : ITicketService
     public async Task<Seat> GetSeatByIdAsync(int ticketId)
     {
         return await _ticketRepository.GetSeatByIdAsync(ticketId);
+    }
+    
+    public async Task<IEnumerable<Seat>> GetSeatByFlightIdAsync(int flightId)
+    {
+        var seats = await _ticketRepository.GetSeatByFlightIdAsync(flightId);
+        var availableSeats = seats.Where(seat => seat.Status.Equals("available"));
+        return availableSeats;
     }
 }

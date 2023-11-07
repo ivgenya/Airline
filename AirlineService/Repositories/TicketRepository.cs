@@ -1,6 +1,7 @@
 ﻿using AirlineService.Data;
 using AirlineService.DTO;
 using AirlineService.Models;
+using AirlineService.State;
 using Microsoft.EntityFrameworkCore;
 
 namespace AirlineService.Repositories;
@@ -16,16 +17,45 @@ public class TicketRepository : ITicketRepository
 
     public async Task<IEnumerable<Ticket>> GetAllTicketsAsync()
     {
-        return await _context.Tickets.ToListAsync();
+        var tickets = await _context.Tickets.ToListAsync();
+        foreach(var t in tickets)
+        {
+            switch (t?.Status)
+            {
+                case "paid": t.State = new TicketPaidState(t);
+                    break;
+                case "used": t.State = new TicketUsedState(t);
+                    break;
+                case "cancelled": t.State = new TicketCancelledState(t);
+                    break;
+                case "expired": t.State = new TicketExpiredState(t);
+                    break;
+                case "annuled": t.State = new TicketAnnuledState(t);
+                    break;
+            }
+        }
+        return tickets;
     }
 
     public async Task<Ticket> GetTicketByIdAsync(int ticketId)
     {
-        return await _context.Tickets.FindAsync(ticketId);
+        var ticket = await _context.Tickets.FindAsync(ticketId);
+        switch (ticket?.Status)
+        {
+            case "paid": ticket.State = new TicketPaidState(ticket);
+                break;
+            case "used": ticket.State = new TicketUsedState(ticket);
+                break;
+            case "cancelled": ticket.State = new TicketCancelledState(ticket);
+                break;
+            case "expired": ticket.State = new TicketExpiredState(ticket);
+                break;
+            case "annuled": ticket.State = new TicketAnnuledState(ticket);
+                break;
+        }
+        return ticket;
     }
-
-
-
+    
     public async Task<int> CreateTicketAsync(Ticket ticket)
     {
         _context.Tickets.Add(ticket);
@@ -115,7 +145,19 @@ public class TicketRepository : ITicketRepository
 
     public async Task<Booking> GetBookingByIdAsync(int? bookingId)
     {
-        return await _context.Bookings.FindAsync(bookingId);
+        var booking = await _context.Bookings.FindAsync(bookingId);
+        switch (booking?.Status)
+        {
+            case "paid": booking.State = new BookingPaidState(booking);
+                break;
+            case "cancelled": booking.State = new BookingCancelledState(booking);
+                break;
+            case "expired": booking.State = new BookingExpiredState(booking);
+                break;
+            case "annuled": booking.State = new BookingAnnuledState(booking);
+                break;
+        }
+        return booking;
     }
 
     public async Task<IEnumerable<Ticket>> GetTicketsByBookingIdAsync(int bookingId)
@@ -167,5 +209,12 @@ public class TicketRepository : ITicketRepository
                 Terminal = ticket.Flight.Schedule.TerminalNavigation.Name
             })
             .FirstOrDefaultAsync();
+    }
+    
+    public async Task<IEnumerable<Seat>> GetSeatByFlightIdAsync(int flightId)
+    {
+        return await _context.Seats
+            .Where(seat => seat.FlightId == flightId)
+            .ToListAsync();
     }
 }
