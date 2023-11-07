@@ -52,9 +52,9 @@ public class ScheduleController: ControllerBase
             Number = scheduleModel.Number,
             DepartureAirportId = scheduleModel.DepartureAirportId,
             ArrivalAirportId = scheduleModel.ArrivalAirportId,
-            DepartureTime = scheduleModel.DepartureTime,
-            ArrivalTime = scheduleModel.ArrivalTime,
-            FlightDuration = scheduleModel.FlightDuration,
+            DepartureTime = TimeSpan.Parse(scheduleModel.DepartureTime),
+            ArrivalTime = TimeSpan.Parse(scheduleModel.ArrivalTime),
+            FlightDuration = TimeSpan.Parse(scheduleModel.FlightDuration),
             Terminal = scheduleModel.Terminal
         };
         await _service.AddScheduleAsync(schedule);
@@ -73,11 +73,12 @@ public class ScheduleController: ControllerBase
         existingSchedule.Number = scheduleModel.Number;
         existingSchedule.DepartureAirportId = scheduleModel.DepartureAirportId;
         existingSchedule.ArrivalAirportId = scheduleModel.ArrivalAirportId;
-        existingSchedule.DepartureTime = scheduleModel.DepartureTime;
-        existingSchedule.ArrivalTime = scheduleModel.ArrivalTime;
-        existingSchedule.FlightDuration = scheduleModel.FlightDuration;
+        existingSchedule.DepartureTime = TimeSpan.Parse(scheduleModel.DepartureTime);
+        existingSchedule.ArrivalTime = TimeSpan.Parse(scheduleModel.ArrivalTime);
+        existingSchedule.FlightDuration = TimeSpan.Parse(scheduleModel.FlightDuration);
         existingSchedule.Terminal = scheduleModel.Terminal;
-        return NoContent();
+        await _service.UpdateScheduleAsync(existingSchedule);
+        return Ok(existingSchedule);
     }
 
     [HttpDelete("{id}")]
@@ -91,6 +92,6 @@ public class ScheduleController: ControllerBase
             return NotFound();
         }
         await _service.DeleteScheduleAsync(id);
-        return NoContent();
+        return Ok("Deleted successfully");
     }
 }
