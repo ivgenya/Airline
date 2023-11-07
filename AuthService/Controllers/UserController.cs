@@ -29,6 +29,30 @@ public class UserController:Controller
         _configuration = configuration;
     }
     
+    [HttpGet("{username}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> GetUserByIdAsync(String username)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null)
+            return NotFound();
+        return Ok(user);
+    }
+    
+    [HttpGet("GetUserRole")]
+    public async Task<IActionResult> GetUserRoleAsync()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Ok("unauthorized");
+        }
+        var roles = await _userManager.GetRolesAsync(user);
+        var userRole = roles.First();
+        return Ok(userRole);
+    }
+    
     [HttpGet("all")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "admin")]
@@ -36,25 +60,21 @@ public class UserController:Controller
     {
         var adminUsers = await _userManager.GetUsersInRoleAsync("admin");
         var dispatcherUsers = await _userManager.GetUsersInRoleAsync("dispatcher");
-
         var allUsers = adminUsers.Concat(dispatcherUsers);
-
         return Ok(allUsers);
     }
     
-    [HttpPost("{model}")]
+    [HttpPost("add")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> AddAdminAndDispatcher([FromBody] NewUserModel newUserModel)
+    public async Task<IActionResult> AddUser([FromBody] NewUserModel newUserModel)
     {
         var newUser = new ApplicationUser
         {
             UserName = newUserModel.UserName,
             Email = newUserModel.Email
         };
-
         var result = await _userManager.CreateAsync(newUser, newUserModel.Password);
-    
         if (result.Succeeded)
         {
             await _userManager.AddToRoleAsync(newUser, newUserModel.Role);
@@ -70,7 +90,6 @@ public class UserController:Controller
     {
         Console.WriteLine(username);
         var user = await _userManager.FindByNameAsync(username);
-
         if (user == null)
         {
             return NotFound();
@@ -98,18 +117,17 @@ public class UserController:Controller
         return BadRequest(result.Errors);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{username}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "admin")]
-    public async Task<IActionResult> DeleteUser(string id)
+    public async Task<IActionResult> DeleteUser(string username)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userManager.FindByNameAsync(username);
         if (user == null)
         {
             return NotFound();
         }
         var result = await _userManager.DeleteAsync(user);
-
         if (result.Succeeded)
         {
             return Ok("User deleted successfully");
