@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using AuthService.DTO;
 using AuthService.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -99,15 +100,5 @@ public class AuthController:Controller
         }
         return BadRequest(result.Errors);
     }
-
-    [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
-    {
-        if (HttpContext.Request.Headers.ContainsKey("Authorization"))
-        {
-            HttpContext.Response.Headers.Remove("Authorization");
-        }
-
-        return Ok(new { Message = "Logout successful" });
-    }
+    
 }
