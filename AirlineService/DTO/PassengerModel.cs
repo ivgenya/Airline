@@ -15,5 +15,6 @@ public class PassengerModel
     [Required]
     public string? Gender { get; set; }
     [Required]
+    [EmailAddress]
     public string Email { get; set; } = null!;
 }

@@ -8,9 +8,9 @@ public class FlightService: IFlightService
 {
     private readonly IFlightRepository _repository;
 
-    public FlightService(IFlightRepository _repository)
+    public FlightService(IFlightRepository repository)
     {
-        this._repository = _repository;
+        _repository = repository;
     }
     public async Task<IEnumerable<Flight>> GetAllFlightsAsync()
     {

@@ -34,9 +34,7 @@ public class TicketController : ControllerBase
         {
             string bearerToken = authorizationHeader.Substring("Bearer ".Length);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-            Console.WriteLine(bearerToken);
         }
-        Console.WriteLine("success");
         var seat = await _service.GetSeatByIdAsync(seatId);
         if (seat == null)
         {
@@ -63,22 +61,14 @@ public class TicketController : ControllerBase
         var jsonData = new StringContent(JsonConvert.SerializeObject(ticketId), Encoding.UTF8, "application/json");
 
         var response = await _httpClient.PostAsync("https://localhost:7066/api/UserTickets?ticketId=" + ticketId, jsonData);
-        Console.WriteLine("Request:");
-        Console.WriteLine(response.RequestMessage);
-        Console.WriteLine("Response:");
-        Console.WriteLine(response);
-        Console.WriteLine(response.Content);
         if (response.IsSuccessStatusCode)
         {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Успешный ответ от authservice:");
-            Console.WriteLine(responseContent);
+            await response.Content.ReadAsStringAsync();
         }
         else
         {
-            Console.WriteLine("Ошибка при отправке POST-запроса в ServiceB");
+            Console.WriteLine("Ошибка при отправке POST-запроса");
         }
-        
         if (ticket == null)
             return BadRequest("An error has occurred");
 
@@ -102,10 +92,9 @@ public class TicketController : ControllerBase
     [HttpPost("pay/{ticketId}")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "client")]
-    public async Task<IActionResult> PayForTicket(int ticketId, [FromQuery] PaymentModel paymentInfo)
+    public async Task<IActionResult> PayForTicket(int ticketId, [FromBody] PaymentModel paymentInfo)
     {
         var paymentResult = await _service.MakePaymentAsync(ticketId, paymentInfo);
-
         if (paymentResult)
         {
             return Ok("Payment successful");
@@ -113,7 +102,7 @@ public class TicketController : ControllerBase
         return BadRequest("Payment failed");
     }
 
-    [HttpGet("book/{id}")]
+    [HttpGet("booking/{id}")]
     public async Task<ActionResult<Booking>> GetBookingById(int id)
     {
         var booking = await _service.GetBookingByIdAsync(id);
@@ -125,8 +114,8 @@ public class TicketController : ControllerBase
     }
     
     [HttpPost("register")]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    //[Authorize(Roles = "client")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "client")]
     public async Task<IActionResult> RegisterForFlight(int ticketId)
     {
         try
@@ -139,8 +128,6 @@ public class TicketController : ControllerBase
             var boardingPass = await _service.GetBoardingPassAsync(ticket.Id);
             if (DateTime.Now.Add(new TimeSpan(0, 3, 0, 0)) < DateTime.Today.Add(boardingPass.DepartureTime))
             {
-                Console.WriteLine(DateTime.Now.Add(new TimeSpan(0, 3, 0, 0)));
-                Console.WriteLine(DateTime.Today.Add(boardingPass.DepartureTime));
                 return BadRequest("Регистрация не началась.");
             }
             if (DateTime.Now.Add(new TimeSpan(0, 1, 0, 0)) > DateTime.Today.Add(boardingPass.DepartureTime))
@@ -151,20 +138,11 @@ public class TicketController : ControllerBase
             {
                 ticket.State.Use(ticket);
                 await _service.UpdateTicketAsync(ticket);
-                if (ticket.BookingId != null)
-                {
-                    var booking = await _service.GetBookingByIdAsync(ticket.BookingId);
-                    booking.State.Complete(booking);
-                    await _service.UpdateBookingAsync(booking);
-                }
                 var pdfBytes = _service.GenerateBoardingPass(boardingPass);
                 await _service.UpdateTicketAsync(ticket);
                 return File(pdfBytes, "application/pdf", "boarding-pass.pdf");
             }
-            else
-            {
-                return BadRequest("Невозможно зарегистрировать билет, так как он не оплачен.");
-            }
+            return BadRequest("Невозможно зарегистрировать билет.");
         }
         catch (Exception ex)
         {
@@ -191,7 +169,11 @@ public class TicketController : ControllerBase
         await _service.UpdateBookingAsync(booking);
         foreach (var ticket in tickets)
         {
-            await _service.DeleteTicketAsync(ticket.Id);
+            ticket.State.Cancel(ticket);
+            await _service.UpdateTicketAsync(ticket);
+            var seat = await _service.GetSeatByIdAsync(ticket.SeatId);
+            seat.Status = "available";
+            await _service.UpdateSeatAsync(seat);
         }
         return Ok("Бронирование отменено");
     }
@@ -227,8 +209,28 @@ public class TicketController : ControllerBase
                 ticketDetailsList.Add(ticketDetails);
             }
         }
-
         return Ok(ticketDetailsList);
     }
+    
+    [HttpGet("seats/{flightId}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "client")]
+    public async Task<ActionResult<Booking>> GetSeatsByFlightId(int flightId)
+    {
+        var seats = await _service.GetSeatByFlightIdAsync(flightId);
+        return Ok(seats);
+    }
+ 
+ [HttpGet("GetTicketDetails/{ticketId}")]
+ [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+ [Authorize(Roles = "client")]
+ public async Task<IActionResult> GetTicketDetails(int ticketId)
+ {
+     var ticket = await _service.GetBoardingPassAsync(ticketId);
+     if (ticket == null)
+         return NotFound();
+
+     return Ok(ticket);
+ }
 
 }

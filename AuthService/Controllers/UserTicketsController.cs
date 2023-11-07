@@ -21,8 +21,6 @@ public class UserTicketsController : Controller
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly HttpClient _httpClient;
-    
-
     public UserTicketsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, HttpClient httpClient)
     {
         _context = context;
@@ -67,7 +65,6 @@ public class UserTicketsController : Controller
             {
                 return Unauthorized("Пользователь не авторизован");
             }
-
             var userId = user.Id;
             var ticIds = await _context.userTicket.Where(user => user.UserId == userId).Select(user => user.Id).ToListAsync();
             var jsonData = JsonConvert.SerializeObject(ticIds);
@@ -88,10 +85,7 @@ public class UserTicketsController : Controller
                 var ticketDetails = JsonConvert.DeserializeObject<List<TicketModel>>(responseContent);
                 return Ok(ticketDetails);
             }
-            else
-            {
-                return BadRequest("Ошибка при запросе");
-            }
+            return BadRequest("Ошибка при запросе");
         }
         catch (Exception ex)
         {
