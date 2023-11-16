@@ -15,6 +15,7 @@ namespace AirlineService.Models
         }
 
         public int Id { get; set; }
+        public string? Code { get; set; } = null!;
         public DateTime BookingDate { get; set; }
         public string Status { get; set; } = null!;
         [NotMapped]

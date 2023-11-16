@@ -13,6 +13,7 @@ namespace AirlineService.Models
             State = new TicketUnpaidState(this);
         }
         public int Id { get; set; }
+        public string? Code { get; set; } = null!;
         public int PassengerId { get; set; }
         public int FlightId { get; set; }
         public int? BookingId { get; set; }
@@ -22,7 +23,6 @@ namespace AirlineService.Models
         public string BaggageType { get; set; } = null!;
         [NotMapped]
         public ITicketState State { get;  set; }
-
         [JsonIgnore]
         public virtual Booking? Booking { get; set; }
         [JsonIgnore]
