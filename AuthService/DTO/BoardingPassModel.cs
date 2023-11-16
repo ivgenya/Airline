@@ -1,4 +1,4 @@
-﻿namespace AirlineService.DTO;
+﻿namespace AuthService.DTO;
 
 public class BoardingPassModel
 {
