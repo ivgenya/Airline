@@ -34,10 +34,6 @@ public class ScheduleController: ControllerBase
     public async Task<ActionResult<Schedule>> GetScheduleById(int id)
     {
         var schedule = await _service.GetScheduleByIdAsync(id);
-        if (schedule == null)
-        {
-            return NotFound();
-        }
         return Ok(schedule);
     }
 
@@ -67,8 +63,6 @@ public class ScheduleController: ControllerBase
     public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleModel scheduleModel)
     {
         var existingSchedule = await _service.GetScheduleByIdAsync(id);
-        if (existingSchedule == null) 
-            return NotFound();
         existingSchedule.AirlineId = scheduleModel.AirlineId;
         existingSchedule.Number = scheduleModel.Number;
         existingSchedule.DepartureAirportId = scheduleModel.DepartureAirportId;
@@ -86,11 +80,6 @@ public class ScheduleController: ControllerBase
     [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> DeleteSchedule(int id)
     {
-        var existingSchedule = await _service.GetScheduleByIdAsync(id);
-        if (existingSchedule == null)
-        {
-            return NotFound();
-        }
         await _service.DeleteScheduleAsync(id);
         return Ok("Deleted successfully");
     }
