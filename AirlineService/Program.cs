@@ -1,6 +1,7 @@
 using System.Text;
 using AirlineService.Data;
 using AirlineService.Repositories;
+using AirlineService.Scheduler;
 using AirlineService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
-
+builder.Services.AddScheduler();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOrigin", builder =>
