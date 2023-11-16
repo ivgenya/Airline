@@ -9,5 +9,6 @@ public interface ITicketState
     void Expire(Ticket ticket);
     void Cancel(Ticket ticket);
     void Use(Ticket ticket);
+    void UnableToPay(Ticket ticket);
     void Annul(Ticket ticket);
 }

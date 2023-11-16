@@ -20,12 +20,17 @@ public class BookingConfirmedState : IBookingState
         booking.State = new BookingCancelledState(booking);
     }
 
+    public void Complete(Booking booking)
+    {
+        booking.State = new BookingCompletedState(booking);
+    }
+
     public void Expire(Booking booking) {
         booking.State = new BookingExpiredState(booking);
     }
 
     public void Annul(Booking booking) {
-        booking.State = new BookingAnnuledState(booking);
+        booking.State = new BookingAnnulledState(booking);
     }
 }
 
@@ -47,12 +52,17 @@ public class BookingPaidState : IBookingState
         throw new InvalidOperationException("Cannot transition from Paid to Cancelled.");
     }
 
+    public void Complete(Booking booking)
+    {
+        booking.State = new BookingCompletedState(booking);
+    }
+
     public void Expire(Booking booking) {
         throw new InvalidOperationException("Cannot transition from Paid to Expired.");
     }
 
     public void Annul(Booking booking) {
-        booking.State = new BookingAnnuledState(booking);
+        booking.State = new BookingAnnulledState(booking);
     }
 }
 
@@ -74,12 +84,17 @@ public class BookingCancelledState : IBookingState
     public void Cancel(Booking booking) {
     }
 
+    public void Complete(Booking booking)
+    {
+        throw new InvalidOperationException("Cannot transition from Cancelled to Completed.");
+    }
+
     public void Expire(Booking booking) {
         throw new InvalidOperationException("Cannot transition from Cancelled to Expired.");
     }
 
     public void Annul(Booking booking) {
-        throw new InvalidOperationException("Cannot transition from Cancelled to Annuled.");
+        throw new InvalidOperationException("Cannot transition from Cancelled to Annulled.");
     }
 }
 
@@ -101,38 +116,77 @@ public class BookingExpiredState : IBookingState
         throw new InvalidOperationException("Cannot transition from Expired to Cancelled.");
     }
 
+    public void Complete(Booking booking)
+    {
+        throw new InvalidOperationException("Cannot transition from Expired to Completed.");
+    }
+
     public void Expire(Booking booking) {
         
     }
 
     public void Annul(Booking booking) {
-        throw new InvalidOperationException("Cannot transition from Expired to Annuled.");
+        throw new InvalidOperationException("Cannot transition from Expired to Annulled.");
+    }
+}
+
+public class BookingCompletedState : IBookingState
+{
+    public static string StatusString => "completed";
+    
+    public BookingCompletedState(Booking booking) {
+        booking.Status = StatusString;
+    }
+    public void Confirm(Booking booking) {
+        throw new InvalidOperationException("Cannot transition from Completed to Confirmed.");
+    }
+    public void Pay(Booking booking) {
+        throw new InvalidOperationException("Cannot transition from Completed to Paid.");
+    }
+
+    public void Cancel(Booking booking) {
+        throw new InvalidOperationException("Cannot transition from Completed to Cancelled.");
+    }
+
+    public void Complete(Booking booking)
+    {
+    }
+
+    public void Expire(Booking booking) {
+        throw new InvalidOperationException("Cannot transition from Completed to Expired.");
+    }
+    
+    public void Annul(Booking booking) {
+        throw new InvalidOperationException("Cannot transition from Completed to Annul.");
     }
 }
 
 
-
-
-public class BookingAnnuledState : IBookingState
+public class BookingAnnulledState : IBookingState
 {
-    public static string StatusString => "annuled";
+    public static string StatusString => "annulled";
     
-    public BookingAnnuledState(Booking booking) {
+    public BookingAnnulledState(Booking booking) {
         booking.Status = StatusString;
     }
     public void Confirm(Booking booking) {
-        throw new InvalidOperationException("Cannot transition from Annuled to Confirmed.");
+        throw new InvalidOperationException("Cannot transition from Annulled to Confirmed.");
     }
     public void Pay(Booking booking) {
-        throw new InvalidOperationException("Cannot transition from Annuled to Paid.");
+        throw new InvalidOperationException("Cannot transition from Annulled to Paid.");
     }
 
     public void Cancel(Booking booking) {
-        throw new InvalidOperationException("Cannot transition from Annuled to Cancelled.");
+        throw new InvalidOperationException("Cannot transition from Annulled to Cancelled.");
+    }
+
+    public void Complete(Booking booking)
+    {
+        throw new InvalidOperationException("Cannot transition from Annulled to Completed.");
     }
 
     public void Expire(Booking booking) {
-        throw new InvalidOperationException("Cannot transition from Annuled to Expired.");
+        throw new InvalidOperationException("Cannot transition from Annulled to Expired.");
     }
     
     public void Annul(Booking booking) {
