@@ -136,7 +136,6 @@ public class TicketController : ControllerBase
                 ticket.State.Use(ticket);
                 await _service.UpdateTicketAsync(ticket);
                 var pdfBytes = _service.GenerateBoardingPass(boardingPass);
-                await _service.UpdateTicketAsync(ticket);
                 return File(pdfBytes, "application/pdf", "boarding-pass.pdf");
             }
             return BadRequest("Невозможно зарегистрировать билет.");
