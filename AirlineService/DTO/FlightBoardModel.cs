@@ -16,4 +16,5 @@ public class FlightBoardModel
         public string ArrivalAirportShortName { get; set; }
         public string DepartureAirportCity { get; set; }
         public string DepartureAirportShortName { get; set; }
+        public int CheapestSeatPrice { get; set; }
 }
