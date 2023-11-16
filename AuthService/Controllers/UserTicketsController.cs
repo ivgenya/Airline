@@ -38,7 +38,6 @@ public class UserTicketsController : Controller
             {
                 return Unauthorized("Пользователь не авторизован");
             }
-
             var userId = user.Id;
             var userTicket = new UserTicket()
             {
@@ -75,14 +74,51 @@ public class UserTicketsController : Controller
             {
                 string bearerToken = authorizationHeader.Substring("Bearer ".Length);
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
-                Console.WriteLine(bearerToken);
             }
             HttpContent content = new StringContent(jsonData, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await _httpClient.PostAsync(apiUrl, content);
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var ticketDetails = JsonConvert.DeserializeObject<List<TicketModel>>(responseContent);
+                var ticketDetails = JsonConvert.DeserializeObject<List<BoardingPassModel>>(responseContent);
+                return Ok(ticketDetails);
+            }
+            return BadRequest("Ошибка при запросе");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Произошла ошибка при добавлении данных UserTicket: {ex.Message}");
+        }
+    }
+    
+     [HttpGet("GetAllUserBookings")]
+    public async Task<IActionResult> GetAllUserBookings()
+    {
+        try
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("Пользователь не авторизован");
+            }
+            var userId = user.Id;
+            var ticIds = await _context.userTicket.Where(user => user.UserId == userId).Select(user => user.Id).ToListAsync();
+            var jsonData = JsonConvert.SerializeObject(ticIds);
+            string apiUrl = "https://localhost:7175/api/Ticket/GetBookingsDetails";
+            HttpContext httpContext = HttpContext;
+            string authorizationHeader = httpContext.Request.Headers["Authorization"];
+            if (!string.IsNullOrEmpty(authorizationHeader) && authorizationHeader.StartsWith("Bearer "))
+            {
+                string bearerToken = authorizationHeader.Substring("Bearer ".Length);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            }
+            HttpContent content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+            HttpResponseMessage response = await _httpClient.PostAsync(apiUrl, content);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var ticketDetails = JsonConvert.DeserializeObject<List<BoardingPassModel>>(responseContent);
+                ticketDetails = ticketDetails.OrderByDescending(ticket => ticket.BookingDate).ToList();
                 return Ok(ticketDetails);
             }
             return BadRequest("Ошибка при запросе");

@@ -17,10 +17,13 @@ public interface ITicketService
     Task<bool> MakePaymentAsync(int ticketId, PaymentModel paymentInfo);
     Task<int> ReserveTicketAsync(int ticketId);
     Task<Booking> GetBookingByIdAsync(int? bookingId);
+    Task<Booking> GetBookingByCodeAsync(string? code);
     Task<int> UpdateBookingAsync(Booking booking);
     public byte[] GenerateBoardingPass(BoardingPassModel model);
+    byte[] GenerateTicket(BoardingPassModel model);
     Task<BoardingPassModel?> GetBoardingPassAsync(int ticketId);
     Task<Seat> GetSeatByIdAsync(int ticketId);
     Task<int> UpdateSeatAsync(Seat seat);
     Task<IEnumerable<Seat>> GetSeatByFlightIdAsync(int flightId);
+    Task<Ticket> GetTicketByCodeAsync(string ticketCode);
 }

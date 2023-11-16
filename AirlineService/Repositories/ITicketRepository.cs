@@ -6,6 +6,7 @@ namespace AirlineService.Repositories;
 public interface ITicketRepository
 {
     Task<IEnumerable<Ticket>> GetAllTicketsAsync();
+    Task<IEnumerable<Ticket>> GetAllTicketsByFlightIdAsync(int flightId);
     Task<Ticket> GetTicketByIdAsync(int ticketId);
     Task<int> CreateTicketAsync(Ticket ticket);
     Task<int> UpdateTicketAsync(Ticket ticket);
@@ -24,5 +25,7 @@ public interface ITicketRepository
     Task<int> UpdateBookingAsync(Booking booking);
     Task<BoardingPassModel?> GetBoardingPassAsync(int ticketId);
     Task<IEnumerable<Seat>> GetSeatByFlightIdAsync(int flightId);
+    Task<Booking> GetBookingByCodeAsync(string? code);
+    Task<Ticket> GetTicketByCodeAsync(string ticketCode);
 
 }

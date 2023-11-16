@@ -81,7 +81,6 @@ public class TicketController : ControllerBase
     public async Task<IActionResult> BookTicket(int ticketId)
     {
         var bookingId = await _service.ReserveTicketAsync(ticketId);
-        Console.WriteLine(bookingId);
         if (bookingId != -1)
         {
             return Ok(bookingId);
@@ -97,15 +96,17 @@ public class TicketController : ControllerBase
         var paymentResult = await _service.MakePaymentAsync(ticketId, paymentInfo);
         if (paymentResult)
         {
-            return Ok("Payment successful");
+            var ticket = await _service.GetBoardingPassAsync(ticketId);
+            var pdfBytes = _service.GenerateTicket(ticket);
+            return File(pdfBytes, "application/pdf", "ticket.pdf");
         }
         return BadRequest("Payment failed");
     }
 
-    [HttpGet("booking/{id}")]
-    public async Task<ActionResult<Booking>> GetBookingById(int id)
+    [HttpGet("booking/{code}")]
+    public async Task<ActionResult<Booking>> GetBookingById(string code)
     {
-        var booking = await _service.GetBookingByIdAsync(id);
+        var booking = await _service.GetBookingByCodeAsync(code);
         if (booking == null)
         {
             return NotFound();
@@ -116,21 +117,17 @@ public class TicketController : ControllerBase
     [HttpPost("register")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize(Roles = "client")]
-    public async Task<IActionResult> RegisterForFlight(int ticketId)
+    public async Task<IActionResult> RegisterForFlight(string ticketCode)
     {
         try
         {
-            var ticket = await _service.GetTicketByIdAsync(ticketId);
-            if (ticket == null)
-            {
-                return NotFound("Билет с указанным номером не найден.");
-            }
+            var ticket = await _service.GetTicketByCodeAsync(ticketCode);
             var boardingPass = await _service.GetBoardingPassAsync(ticket.Id);
-            if (DateTime.Now.Add(new TimeSpan(0, 3, 0, 0)) < DateTime.Today.Add(boardingPass.DepartureTime))
+            if (DateTime.Now.Add(new TimeSpan(0, 3, 0, 0)) < boardingPass.Date.Add(boardingPass.DepartureTime))
             {
                 return BadRequest("Регистрация не началась.");
             }
-            if (DateTime.Now.Add(new TimeSpan(0, 1, 0, 0)) > DateTime.Today.Add(boardingPass.DepartureTime))
+            if (DateTime.Now.Add(new TimeSpan(0, 1, 0, 0)) > boardingPass.Date.Add(boardingPass.DepartureTime))
             {
                 return BadRequest("Регистрация закончилась.");
             }
@@ -144,7 +141,7 @@ public class TicketController : ControllerBase
             }
             return BadRequest("Невозможно зарегистрировать билет.");
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             return StatusCode(500, "Произошла ошибка при регистрации на рейс: " + ex.Message);
         }
@@ -154,28 +151,38 @@ public class TicketController : ControllerBase
     [Authorize(Roles = "client")]
     public async Task<IActionResult> CancellBoking(int bookingId)
     {
-        var booking = await _service.GetBookingByIdAsync(bookingId);
-        var tickets = await _service.GetTicketsByBookingIdAsync(bookingId);
+        try
+        {
+            var booking = await _service.GetBookingByIdAsync(bookingId);
+            var tickets = await _service.GetTicketsByBookingIdAsync(bookingId);
 
-        if (booking == null)
-        {
-            return BadRequest("Не существует бронирования с таким номером");
+            if (booking == null)
+            {
+                return BadRequest("Не существует бронирования с таким номером");
+            }
+
+            if (!booking.Status.Equals("confirmed"))
+            {
+                return BadRequest("Бронирование нельзя отменить");
+            }
+
+            booking.State.Cancel(booking);
+            await _service.UpdateBookingAsync(booking);
+            foreach (var ticket in tickets)
+            {
+                ticket.State.Cancel(ticket);
+                await _service.UpdateTicketAsync(ticket);
+                var seat = await _service.GetSeatByIdAsync(ticket.SeatId);
+                seat.Status = "available";
+                await _service.UpdateSeatAsync(seat);
+            }
+
+            return Ok("Бронирование отменено");
         }
-        if (!booking.Status.Equals("confirmed"))
+        catch (InvalidOperationException ex)
         {
-            return BadRequest("Бронирование нельзя отменить");
+            return BadRequest("Возникла ошибка при отмене бронирования");
         }
-        booking.State.Cancel(booking);
-        await _service.UpdateBookingAsync(booking);
-        foreach (var ticket in tickets)
-        {
-            ticket.State.Cancel(ticket);
-            await _service.UpdateTicketAsync(ticket);
-            var seat = await _service.GetSeatByIdAsync(ticket.SeatId);
-            seat.Status = "available";
-            await _service.UpdateSeatAsync(seat);
-        }
-        return Ok("Бронирование отменено");
     }
     
     [HttpPost("GetTicketDetails")]
@@ -183,30 +190,41 @@ public class TicketController : ControllerBase
     [Authorize(Roles = "client")]
     public async Task<IActionResult> GetTicketDetails([FromBody] List<int> ticketIds)
     {
-        Console.WriteLine(ticketIds);
         if (ticketIds == null)
         {
             return BadRequest("Некорректные параметры запроса");
         }
 
-        List<TicketModel> ticketDetailsList = new List<TicketModel>();
+        List<BoardingPassModel> ticketDetailsList = new List<BoardingPassModel>();
 
         foreach (var id in ticketIds)
         {
-            var ticket = await _service.GetTicketByIdAsync(id);
+            var ticket = await _service.GetBoardingPassAsync(id);
             if (ticket != null)
             {
-                var ticketDetails = new TicketModel
-                {
-                    PassengerId = ticket.PassengerId,
-                    FlightId = ticket.FlightId,
-                    BookingId = ticket.BookingId,
-                    SeatId = ticket.SeatId,
-                    DateOfPurchase = ticket.DateOfPurchase,
-                    Status = ticket.Status,
-                    BaggageType = ticket.BaggageType
-                };
-                ticketDetailsList.Add(ticketDetails);
+                ticketDetailsList.Add(ticket);
+            }
+        }
+        return Ok(ticketDetailsList);
+    }
+    
+    [HttpPost("GetBookingsDetails")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "client")]
+    public async Task<IActionResult> GetBookingsDetails([FromBody] List<int> ticketIds)
+    {
+        if (ticketIds == null)
+        {
+            return BadRequest("Некорректные параметры запроса");
+        }
+        List<BoardingPassModel> ticketDetailsList = new List<BoardingPassModel>();
+
+        foreach (var id in ticketIds)
+        {
+            var ticket = await _service.GetBoardingPassAsync(id);
+            if (ticket != null && ticket.BookingStatus != null)
+            {
+                ticketDetailsList.Add(ticket);
             }
         }
         return Ok(ticketDetailsList);
@@ -221,16 +239,49 @@ public class TicketController : ControllerBase
         return Ok(seats);
     }
  
- [HttpGet("GetTicketDetails/{ticketId}")]
- [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
- [Authorize(Roles = "client")]
- public async Task<IActionResult> GetTicketDetails(int ticketId)
- {
-     var ticket = await _service.GetBoardingPassAsync(ticketId);
-     if (ticket == null)
-         return NotFound();
+     [HttpGet("GetTicketDetails/{ticketCode}")]
+     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+     [Authorize(Roles = "client")]
+     public async Task<IActionResult> GetTicketDetails(string ticketCode)
+     {
+         var ticket = await _service.GetTicketByCodeAsync(ticketCode);
+         var ticketDetails = await _service.GetBoardingPassAsync(ticket.Id);
+         if (ticketDetails == null)
+             return NotFound();
 
-     return Ok(ticket);
- }
+         return Ok(ticketDetails);
+     }
+     
+     [HttpGet("GetTicketDetailsById/{ticketId}")]
+     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+     [Authorize(Roles = "client")]
+     public async Task<IActionResult> GetTicketDetailsById(int ticketId)
+     {
+         var ticketDetails = await _service.GetBoardingPassAsync(ticketId);
+         if (ticketDetails == null)
+             return NotFound();
 
+         return Ok(ticketDetails);
+     }
+
+     [HttpGet("GetTicketDetailsByBooking/{code}")]
+     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+     [Authorize(Roles = "client")]
+     public async Task<IActionResult> GetTicketDetailsByBooking(string code)
+     {
+         var booking = await _service.GetBookingByCodeAsync(code);
+         if (booking != null)
+         {
+             var tickets = await _service.GetTicketsByBookingIdAsync(booking.Id);
+             List<BoardingPassModel> ticketDetailsList = new List<BoardingPassModel>();
+
+             foreach (var ticket in tickets)
+             {
+                 var ticketDetails = await _service.GetBoardingPassAsync(ticket.Id);
+                 ticketDetailsList.Add(ticketDetails);
+             }
+             return Ok(ticketDetailsList);
+         }
+         return NotFound("Бронирования с таким номером не существует");
+     }
 }

@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using AirlineService.DTO;
+﻿using AirlineService.DTO;
 using AirlineService.Models;
 using AirlineService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,9 +24,6 @@ public class FlightController : ControllerBase
     public async Task<IActionResult> GetFlightById(int id)
     {
         var flight = await _service.GetFlightByIdAsync(id);
-        if (flight == null)
-            return NotFound();
-
         return Ok(flight);
     }
     
@@ -65,18 +60,13 @@ public class FlightController : ControllerBase
     public async Task<IActionResult> UpdateFlight(int id, [FromBody] FlightModel flightModel)
     {
         var existingFlight = await _service.GetFlightByIdAsync(id);
-        if (existingFlight == null)
-            return NotFound();
-        
         existingFlight.ScheduleId = flightModel.ScheduleId;
         existingFlight.Date = flightModel.Date;
         existingFlight.PlaneId = flightModel.PlaneId;
         existingFlight.Type = flightModel.Type;
         existingFlight.Status = flightModel.Status;
         existingFlight.Gate = flightModel.Gate;
-
         await _service.UpdateFlightAsync(existingFlight);
-
         return Ok(existingFlight);
     }
 
@@ -85,10 +75,6 @@ public class FlightController : ControllerBase
     [Authorize(Roles = "dispatcher")]
     public async Task<IActionResult> DeleteFlight(int id)
     {
-        var existingFlight = await _service.GetFlightByIdAsync(id);
-        if (existingFlight == null)
-            return NotFound();
-
         await _service.DeleteFlightAsync(id);
         return Ok("Deleted successfully");
     }
@@ -98,6 +84,13 @@ public class FlightController : ControllerBase
     {
         var flights = await _service.GetFlightsBoardAsync(departureCity, arrivalCity, date);
         return Ok(flights);
+    }
+    
+    [HttpGet("fullname")]
+    public async Task<IActionResult> GetFlightsByFullNameAndDate(string flightFullName, DateTime date)
+    {
+        var flight = await _service.GetFlightsByFullNameAndDateAsync(flightFullName, date);
+        return Ok(flight);
     }
 
 }

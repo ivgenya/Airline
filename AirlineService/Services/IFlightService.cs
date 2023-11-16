@@ -12,4 +12,5 @@ public interface IFlightService
     Task UpdateFlightAsync(Flight flight);
     Task DeleteFlightAsync(int flightId);
     Task<IEnumerable<FlightBoardModel>> GetFlightsBoardAsync(string departureCity, string arrivalCity, DateTime date);
+    Task<FlightBoardModel> GetFlightsByFullNameAndDateAsync(string fullName, DateTime date);
 }

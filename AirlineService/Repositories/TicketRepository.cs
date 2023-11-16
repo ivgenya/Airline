@@ -30,9 +30,38 @@ public class TicketRepository : ITicketRepository
                     break;
                 case "expired": t.State = new TicketExpiredState(t);
                     break;
-                case "annuled": t.State = new TicketAnnuledState(t);
+                case "unable to pay": t.State = new TicketUnabledToPayState(t);
+                    break;
+                case "annulled": t.State = new TicketAnnuledState(t);
                     break;
             }
+        }
+        return tickets;
+    }
+    
+    public async Task<IEnumerable<Ticket>> GetAllTicketsByFlightIdAsync(int flightId)
+    {
+        var tickets = await _context.Tickets.Where(ticket => ticket.FlightId == flightId)
+            .ToListAsync();
+        foreach(var t in tickets)
+        {
+            switch (t?.Status)
+            {
+                case "paid": t.State = new TicketPaidState(t);
+                    break;
+                case "used": t.State = new TicketUsedState(t);
+                    break;
+                case "cancelled": t.State = new TicketCancelledState(t);
+                    break;
+                case "expired": t.State = new TicketExpiredState(t);
+                    break;
+                case "unable to pay": t.State = new TicketUnabledToPayState(t);
+                    break;
+                case "annulled": t.State = new TicketAnnuledState(t);
+                    break;
+            }
+            Console.WriteLine(t.Status);
+
         }
         return tickets;
     }
@@ -50,7 +79,30 @@ public class TicketRepository : ITicketRepository
                 break;
             case "expired": ticket.State = new TicketExpiredState(ticket);
                 break;
-            case "annuled": ticket.State = new TicketAnnuledState(ticket);
+            case "unable to pay": ticket.State = new TicketUnabledToPayState(ticket);
+                break;
+            case "annulled": ticket.State = new TicketAnnuledState(ticket);
+                break;
+        }
+        return ticket;
+    }
+    
+    public async Task<Ticket> GetTicketByCodeAsync(string ticketCode)
+    {
+        var ticket = await _context.Tickets.Where(ticket => ticket.Code.Equals(ticketCode)).FirstOrDefaultAsync();
+        switch (ticket?.Status)
+        {
+            case "paid": ticket.State = new TicketPaidState(ticket);
+                break;
+            case "used": ticket.State = new TicketUsedState(ticket);
+                break;
+            case "cancelled": ticket.State = new TicketCancelledState(ticket);
+                break;
+            case "expired": ticket.State = new TicketExpiredState(ticket);
+                break;
+            case "unable to pay": ticket.State = new TicketUnabledToPayState(ticket);
+                break;
+            case "annulled": ticket.State = new TicketAnnuledState(ticket);
                 break;
         }
         return ticket;
@@ -58,6 +110,7 @@ public class TicketRepository : ITicketRepository
     
     public async Task<int> CreateTicketAsync(Ticket ticket)
     {
+        ticket.Code = Guid.NewGuid().ToString("N");
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync();
         _context.Entry(ticket).GetDatabaseValues();
@@ -137,6 +190,7 @@ public class TicketRepository : ITicketRepository
 
     public async Task<int> CreateBookingAsync(Booking booking)
     {
+        booking.Code = Guid.NewGuid().ToString("N");
         _context.Bookings.Add(booking);
         await _context.SaveChangesAsync();
         _context.Entry(booking).GetDatabaseValues();
@@ -154,7 +208,28 @@ public class TicketRepository : ITicketRepository
                 break;
             case "expired": booking.State = new BookingExpiredState(booking);
                 break;
-            case "annuled": booking.State = new BookingAnnuledState(booking);
+            case "annulled": booking.State = new BookingAnnulledState(booking);
+                break;
+            case "completed": booking.State = new BookingCompletedState(booking);
+                break;
+        }
+        return booking;
+    }
+    
+    public async Task<Booking> GetBookingByCodeAsync(string? code)
+    {
+        var booking = await _context.Bookings.Where(booking => booking.Code.Equals(code)).FirstOrDefaultAsync();
+        switch (booking?.Status)
+        {
+            case "paid": booking.State = new BookingPaidState(booking);
+                break;
+            case "cancelled": booking.State = new BookingCancelledState(booking);
+                break;
+            case "expired": booking.State = new BookingExpiredState(booking);
+                break;
+            case "annulled": booking.State = new BookingAnnulledState(booking);
+                break;
+            case "completed": booking.State = new BookingCompletedState(booking);
                 break;
         }
         return booking;
@@ -176,7 +251,10 @@ public class TicketRepository : ITicketRepository
     public async Task<BoardingPassModel?> GetBoardingPassAsync(int ticketId)
     {
         return await _context.Tickets
+            .Where(ticket => ticket.Id == ticketId)
             .Where(ticket => ticket.PassengerId == ticket.Passenger.Id)
+            .Where(ticket => ticket.Booking.Id == ticket.BookingId)
+            .Where(ticket => ticket.Seat.Id == ticket.SeatId)
             .Where(ticket => ticket.FlightId == ticket.Flight.Id)
             .Where(ticket => ticket.Flight.ScheduleId == ticket.Flight.Schedule.Id)
             .Where(ticket => ticket.Flight.Schedule.ArrivalAirportId == ticket.Flight.Schedule.ArrivalAirport.Id)
@@ -186,6 +264,10 @@ public class TicketRepository : ITicketRepository
 
             .Select(ticket => new BoardingPassModel
             {
+                TicketId = ticketId,
+                TicketCode = ticket.Code,
+                BookingCode = ticket.Booking.Code,
+                BookingId = ticket.Booking.Id,
                 Surname = ticket.Passenger.Surname,
                 Name = ticket.Passenger.Name,
                 DocumentNumber = ticket.Passenger.DocumentNumber,
@@ -193,9 +275,13 @@ public class TicketRepository : ITicketRepository
                 Gender = ticket.Passenger.Gender,
                 Email = ticket.Passenger.Email,
                 Seat = ticket.Seat.Number,
+                Price = ticket.Seat.Price,
+                TicketStatus = ticket.Status,
+                Class = ticket.Seat.Class,
                 BaggageType = ticket.BaggageType,
                 Date = ticket.Flight.Date,
                 Status = ticket.Flight.Status,
+                DateOfPurchase = ticket.DateOfPurchase,
                 Gate = ticket.Flight.Gate,
                 ShortName = ticket.Flight.Schedule.Airline.ShortName,
                 Number = ticket.Flight.Schedule.Number,
@@ -206,7 +292,9 @@ public class TicketRepository : ITicketRepository
                 DepartureTime = ticket.Flight.Schedule.DepartureTime,
                 ArrivalTime = ticket.Flight.Schedule.ArrivalTime,
                 FlightDuration = ticket.Flight.Schedule.FlightDuration,
-                Terminal = ticket.Flight.Schedule.TerminalNavigation.Name
+                Terminal = ticket.Flight.Schedule.TerminalNavigation.Name,
+                BookingDate = ticket.Booking.BookingDate,
+                BookingStatus = ticket.Booking.Status
             })
             .FirstOrDefaultAsync();
     }

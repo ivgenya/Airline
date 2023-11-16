@@ -46,4 +46,9 @@ public class FlightService: IFlightService
     {
         return await _repository.GetFlightsBoardAsync(departureCity, arrivalCity, date);
     }
+
+    public async Task<FlightBoardModel> GetFlightsByFullNameAndDateAsync(string fullName, DateTime date)
+    {
+        return await _repository.GetFlightsByFullNameAndDateAsync(fullName, date);
+    }
 }

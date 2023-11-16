@@ -14,19 +14,13 @@ public class UserController:Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly IConfiguration _configuration;
 
     public UserController(
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager,
-        SignInManager<ApplicationUser> signInManager,
-        IConfiguration configuration)
+        RoleManager<IdentityRole> roleManager)
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _signInManager = signInManager;
-        _configuration = configuration;
     }
     
     [HttpGet("{username}")]
@@ -37,7 +31,16 @@ public class UserController:Controller
         var user = await _userManager.FindByNameAsync(username);
         if (user == null)
             return NotFound();
-        return Ok(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        var userRole = roles.First();
+        var userModel = new UserModel
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            Role = userRole
+        };
+        return Ok(userModel);
     }
     
     [HttpGet("GetUserRole")]
@@ -61,7 +64,21 @@ public class UserController:Controller
         var adminUsers = await _userManager.GetUsersInRoleAsync("admin");
         var dispatcherUsers = await _userManager.GetUsersInRoleAsync("dispatcher");
         var allUsers = adminUsers.Concat(dispatcherUsers);
-        return Ok(allUsers);
+        var userModels = new List<UserModel>();
+        foreach (var user in allUsers)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var userRole = roles.First();
+            var userModel = new UserModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Role = userRole
+            };
+            userModels.Add(userModel);
+        }
+        return Ok(userModels);
     }
     
     [HttpPost("add")]
