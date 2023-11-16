@@ -12,14 +12,13 @@ public class BoardingPassModel
     public DateTime DateOfBirth { get; set; }
     public string? Gender { get; set; }
     public string Email { get; set; } = null!;
-    public string? Seat { get; set; }
+    public string Seat { get; set; }
     public int Price { get; set; }
     public string TicketStatus { get; set; } = null!;
     public string Class { get; set; } = null!;
     public string BaggageType { get; set; } = null!;
     public DateTime Date { get; set; }
     public string Status { get; set; } = null!;
-    public DateTime DateOfPurchase { get; set; }
     public int Gate { get; set; }
     public string ShortName { get; set; } = null!;
     public int Number { get; set; }
