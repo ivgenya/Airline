@@ -1,0 +1,64 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  .ticket-purchase input:-webkit-autofill,
+.ticket-purchase input:-webkit-autofill:hover,
+.ticket-purchase input:-webkit-autofill:focus,
+.ticket-purchase input:-webkit-autofill:active {
+    transition: background-color 5500s ease-in-out 0s;
+}
+
+.ticket-purchase {
+  color: #000;
+    max-width: 600px;
+    margin: 0 auto;
+    background: #f7f7f7;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-top: 50px;
+  }
+  
+.ticket-purchase h2 {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.input-label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.input-field, select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.purchase-button {
+  background: #2f422e;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 10px;
+}
+
+.purchase-button:hover {
+  background: #2f422e;
+}
+
+.purchase-buttons{
+  display: flex;
+  justify-content:space-between;
+  align-items: center;
+}

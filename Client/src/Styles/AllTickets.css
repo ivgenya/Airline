@@ -1,0 +1,51 @@
+
+.all-tickets {
+  max-width: 80%;
+  margin: 60px auto;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #555;
+  padding: 40px;
+}
+.booking-buttons{
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content:space-around;
+
+}
+.booking-buttons button{
+  margin-bottom: 20px;
+  width: 150px;
+}
+.ticket-flight-name{
+  text-align: center;
+}
+
+.all-tickets-info {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; 
+}
+.all-tickets-info button{
+  background-color: #586960;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 20px;
+}
+.ticket-card{
+  padding: 20px;
+  margin: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+

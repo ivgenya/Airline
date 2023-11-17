@@ -1,0 +1,30 @@
+body {
+    background-color: #fff;
+    font-family: 'Montserrat', sans-serif;
+}
+
+
+.all-bookings {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  background-color: #fff;
+  margin-top: 50px;
+}
+.all-bookings ul {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  padding: 0;
+}
+
+.booking-card {
+  border-radius: 5px;
+  margin-bottom: 15px;
+  padding: 10px;
+}
+
+.no-bookings-message {
+  font-weight: bold;
+  color: #888;
+}

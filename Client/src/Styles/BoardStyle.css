@@ -1,0 +1,119 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.input-group input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+  width:200px;
+}
+
+.input-group-registration input {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 15px;
+  width: 100vh;
+}
+
+.registration-btn{
+  background-color: #586960;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 20px;
+}
+
+.board {
+  background-color: #586960;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 15px;
+}
+
+.board :disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.results table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.results table th, .results table td {
+  border: 1px solid #ccc;
+  padding: 5px;
+  text-align: center;
+}
+
+.results table th {
+  background-color: #008b8a;
+  color: #fff;
+}
+
+.flight-search {
+  text-align: center;
+  padding: 20px;
+}
+
+.input-group {
+  display: inline-block;
+}
+
+.input-group-registration{
+  display: inline-block;
+}
+
+.board {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.results {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; 
+}
+.results button{
+  background-color: #586960;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 20px;
+}
+.flight-card{
+  padding: 20px;
+  margin: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+.flight-name{
+  color: #586960;
+  font-weight: 600;
+}
+.flight-price{
+  font-size: 20px;
+  color: #586960;
+}

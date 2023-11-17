@@ -1,0 +1,29 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+.input-group-search{
+    text-align: center;
+    display: inline-block;
+}
+
+
+.input-group-search input {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 15px;
+    width: 50vh;
+}
+
+.search-btn{
+    background-color: #586960;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 20px;
+}
